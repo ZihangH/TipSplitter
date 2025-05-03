@@ -218,17 +218,17 @@ export default function TipCalculator() {
                 <FormItem>
                   <FormLabel>Sales Tax Rate (%)</FormLabel>
                   <div className="relative">
-                     <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="0"
                         min="0"
                         max="100"
                         step="0.01"
                         className="pl-8"
+                        onFocus={(e) => { if (field.value === 0) {e.target.value = '';}}}
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                         onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                          value={field.value ?? ''}
                           aria-invalid={!!errors.taxRate}
                       />

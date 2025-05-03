@@ -5,7 +5,7 @@ import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { DollarSign, Percent, Users, RefreshCw, Landmark } from "lucide-react";
+import { DollarSign, Percent, Users, RefreshCw } from "lucide-react"; // Removed Landmark
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+// Removed RadioGroup imports as country selection is removed
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +37,7 @@ const formSchema = z.object({
   billAmount: z.coerce.number().min(0.01, "Bill amount must be positive"),
   tipPercentage: z.coerce.number().min(0, "Tip % cannot be negative").max(100, "Tip % cannot exceed 100"),
   numberOfPeople: z.coerce.number().int().min(1, "Must be at least 1 person"),
-  country: z.enum(["us", "ca"]).default("us"),
+  // Removed country field
   taxRate: z.coerce.number().min(0, "Tax rate cannot be negative").max(100, "Tax rate cannot exceed 100").optional().default(0),
   roundUp: z.boolean().default(false),
 });
@@ -78,7 +78,7 @@ export default function TipCalculator() {
       billAmount: undefined, // Use undefined for placeholder visibility
       tipPercentage: 15,
       numberOfPeople: 1,
-      country: "us",
+      // Removed country default value
       taxRate: 0,
       roundUp: false,
     },
@@ -89,26 +89,21 @@ export default function TipCalculator() {
   const billAmount = watch("billAmount");
   const tipPercentage = watch("tipPercentage");
   const numberOfPeople = watch("numberOfPeople");
-  const country = watch("country");
+  // Removed country watch
   const taxRate = watch("taxRate");
 
 
   const calculateTip = React.useCallback((data: FormData): CalculationResult | null => {
-    const { billAmount, tipPercentage, numberOfPeople, country, taxRate = 0, roundUp } = data;
+    // Removed country from destructuring
+    const { billAmount, tipPercentage, numberOfPeople, taxRate = 0, roundUp } = data;
 
     if (!billAmount || tipPercentage === undefined || !numberOfPeople) return null; // tip can be 0
 
     const taxDecimal = taxRate / 100;
     const taxAmount = billAmount * taxDecimal;
 
-    let baseForTip: number;
-    if (country === 'ca') {
-      // Canada: Tip on bill amount + tax
-      baseForTip = billAmount + taxAmount;
-    } else {
-      // US (default): Tip on bill amount only
-      baseForTip = billAmount;
-    }
+    // Tip is always calculated on the bill amount (pre-tax) now
+    const baseForTip = billAmount;
 
     const tipDecimal = tipPercentage / 100;
     const tipAmount = baseForTip * tipDecimal;
@@ -135,7 +130,7 @@ export default function TipCalculator() {
     const subscription = watch((values) => {
        const parsed = formSchema.safeParse(values);
        if(parsed.success) {
-         const calculation = calculateTip(parsed.data);
+         const calculation = calculateTip(parsed.data); // Removed country argument
          setResult(calculation);
        } else {
          // Clear results if form is invalid, but don't reset fields
@@ -151,7 +146,7 @@ export default function TipCalculator() {
       billAmount: undefined,
       tipPercentage: 15,
       numberOfPeople: 1,
-      country: "us",
+      // Removed country from reset
       taxRate: 0,
       roundUp: false,
     });
@@ -213,37 +208,7 @@ export default function TipCalculator() {
               )}
             />
 
-            {/* Country Selection */}
-             <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Country (for Tax/Tip Rules)</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="us" id="us"/>
-                        </FormControl>
-                        <Label htmlFor="us" className="font-normal">United States (Tip on pre-tax amount)</Label>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="ca" id="ca"/>
-                        </FormControl>
-                         <Label htmlFor="ca" className="font-normal">Canada (Tip on post-tax amount)</Label>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Country Selection Removed */}
 
             {/* Tax Rate */}
             <FormField
@@ -270,7 +235,7 @@ export default function TipCalculator() {
                     </FormControl>
                   </div>
                    <FieldDescription>
-                    Enter the sales tax rate (e.g., 7 for 7%). Leave as 0 if no tax applies.
+                    Enter the sales tax rate (e.g., 7 for 7%). Leave as 0 if no tax applies. Tip is calculated on the pre-tax amount.
                   </FieldDescription>
                   <FormMessage />
                 </FormItem>
@@ -411,5 +376,3 @@ export default function TipCalculator() {
     </Card>
   );
 }
-
-    
